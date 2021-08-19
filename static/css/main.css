@@ -5,8 +5,8 @@ h1 {
     text-align: center;
 }
 
-
-#question_box {
+#input {
+    margin: 20px;
     background-color: #F8F587;
     padding-left: 50px;
     text-align: left;
@@ -17,20 +17,39 @@ h1 {
     line-height: 50px;
 }
 
+#output {
+    margin: 20px;
+    background-color: #80f654;
+    padding-left: 50px;
+    text-align: left;
+    font-size: 26px;
+    color:red;
+    font-weight: 100;
+    border: 2px solid orange;
+}
+
 span {
     display: inline-block;
     vertical-align: middle;
 }
 
-p{font-size: 18px;
+p {font-size: 18px;
   height: 100px;
   border: 2px solid green;
 }
-
+form {
+  margin-left:20px;
+  padding: 30px;
+  padding-left: 50px;
+  height: 80px;
+  border: 2px solid pink;
+  text-align: left;
+}
 .inputbox {
     width: 1500px;
     height: 50px;
-    padding-left: 5px;
+    padding-left: 20px;
     font-size: 22px;
     font: 'verdana';
+    vertical-align: middle;
 }
