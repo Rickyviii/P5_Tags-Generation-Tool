@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>Tag generation tool _ Open Classroom _ Machine Learning Course _ Project 5</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main2.css?rnd=50') }}">
+    <link rel="stylesheet" href="static/css/main.css?v=4.95" type="text/css">
 </head>
 
 <body>
@@ -12,5 +12,12 @@
   <br>
   <br>
   <br>
-  <p>Please input here your question (limited to 255 characters):</p>
+  <div id='question_box'>
+      <span>Please input here your question (limited to {{len_qu}} characters):</span>
+      <form action="action_to_perform_after_submission" method = "POST">
+        <p>
+          <input type = "text" id = "QU"  class="inputbox" maxlength="{{len_qu}}"/>
+          <input type = "submit" value = "GO"/></p>
+      </form>
+  </div>
 </body>
