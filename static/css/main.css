@@ -1,55 +1,106 @@
-h1 {
-    background-color: #0B23A04A;
-    border: 10px #abc solid;
-    color: #F81D3E;
-    text-align: center;
+body {
+  font: 'verdana';
+  color: #2f454e;
+  font-size: 22px;
+  font-weight: 100;
+  width: 70%;
+  margin-left:auto;
+  margin-right:auto;
 }
 
-#input {
-    margin: 20px;
-    background-color: #F8F587;
-    padding-left: 50px;
+#div0 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f5f7;
+    background-image: linear-gradient( 92.7deg,  rgba(245,212,212,1) 8.5%, rgba(252,251,224,1) 90.2% );
+    width: 100%;
+    height: 10%;
+    font: inherit;
+    font-size: 40px;
+    font-weight: 600;
+    color: #204060;
+    margin:0;
+    border :1px solid #d0c6cd;
+    border-bottom: 3px solid #b7b5b7;
+}
+
+#main_div {
+  width: 100%;
+  height: 100%;
+  margin:0;
+  border-left: 1px solid #d0c6cd;
+  border-right: 1px solid #d0c6cd;
+  position:relative;
+}
+
+#main_div::after {
+            content: "";
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            bottom: 0px;
+            left: 0px;
+            background-image: url("../images/img1.jpg");
+            background-size: 200%;
+            background-repeat:no-repeat;
+            background color: red;
+            opacity: 0.12;
+            z-index: -1;
+          }
+
+#input_qu {
+    display: block;
+    margin-top: 20px;  margin-bottom: 20px;
+    margin-left: 100px; margin-right: 100px;
+    background-color: #e7e8f2;
+    background-image: radial-gradient( circle farthest-corner at 50.3% 44.5%,  #dee6ed 50%,  #f7e6ff 100.2% );
+    padding-left: 0px;
     text-align: left;
     font-size: 26px;
-    font-weight: 600;
-    height: 50px;
-    border: 2px solid blue;
-    line-height: 50px;
+    font-weight: 500;
+    border: 2px solid #ffa64d;
+}
+
+form {
+  display: block;
+  margin: 20px;
+  border: None;
+  height: 40px;
+  font-size: 22px;
+  font-weight: 100;
+}
+
+.inputbox {
+    width: 90%;
+    padding-left: 20px;
+    height: 40px;
+    vertical-align: middle;
+    border: 3px solid #004466;
+    font: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+}
+
+.res {
+  color: #cc0052;
+  font-weight: 400;
+}
+
+div {
+    display: block;
+    margin-top: 20px;  margin-bottom: 20px;
+    margin-left: 20px; margin-right: 20px;
+    font: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
+    border: None;
 }
 
 #output {
-    margin: 20px;
-    background-color: #80f654;
-    padding-left: 50px;
-    text-align: left;
-    font-size: 26px;
-    color:red;
-    font-weight: 100;
-    border: 2px solid orange;
-}
-
-span {
-    display: inline-block;
-    vertical-align: middle;
-}
-
-p {font-size: 18px;
-  height: 100px;
-  border: 2px solid green;
-}
-form {
-  margin-left:20px;
-  padding: 30px;
-  padding-left: 50px;
-  height: 80px;
-  border: 2px solid pink;
-  text-align: left;
-}
-.inputbox {
-    width: 1500px;
-    height: 50px;
+    display: block;
     padding-left: 20px;
     font-size: 22px;
-    font: 'verdana';
-    vertical-align: middle;
 }

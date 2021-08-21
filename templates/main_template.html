@@ -3,26 +3,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>Tag generation tool _ Open Classroom _ Machine Learning Course _ Project 5</title>
-    <link rel="stylesheet" href="static/css/main.css?v=4.98099" type="text/css">
+    <link rel="stylesheet" href="static/css/main.css?v=shope" type="text/css">
 </head>
 
-<body>
-  <h1>Welcome to the tag generation tool</h1>
-  <br>
-  <br>
-  <br>
-  <br>
-  <div id='input'>Please input here your question (limited to {{len_qu}} characters):</div>
-  <div>
-      <form action="/" method = "POST">
-          <input type = "text" name = "QU"  class="inputbox" maxlength="{{len_qu}}"/>
-          <input type = "submit" value = "GO"/>
-      </form>
-  </div>
+<script>
+  function clear_box(elementID, DEFAULT_MSG) {
+    document.getElementById(elementID).innerHTML=DEFAULT_MSG;
+  }
+  function clear_input(elementID, DEFAULT_MSG) {
+    document.getElementById(elementID).value=DEFAULT_MSG;
+  }
+</script>
 
-<!-- {% if output_data|length() > 0 %}-->
- <div id='output'> {{output_data}}
-      <!-- <span>{{output_data}}</span> -->
- </div>
-<!-- {% endif %} -->
+<body>
+  <div id="div0" >
+    Welcome to the tag generation tool</div>
+  <div id="main_div" >
+    <br><br><br><br>
+    <div id='input_qu'>
+        <div>Please type in your question here (limited to {{len_qu}} characters):</div>
+        <form action="/" method = "POST" onsubmit="clear_box('output','*** Loading results, please wait ***')">
+          <input id="QU_id" type = "text" name = "QU"  class="inputbox" maxlength="{{len_qu}}" value="{{input_data}}"
+                       onfocus="clear_input('QU_id','')"/>
+          <input type = "submit" value = "GO"/>
+        </form>
+
+        {% if output_data != "" %}
+        <div id='output'>
+          Here is the list of tags: <span class="res"> {{output_data[0]}} </span><br>
+          Time elapsed for computing: <span class="res"> {{output_data[1]}} </span>
+        </div>
+        {% else %}
+        <div id='output'></div>
+        {% endif %}
+    </div>
+  </div>
 </body>
+</html>
