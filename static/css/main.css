@@ -20,8 +20,8 @@ body {
     font-size: 40px;
     font-weight: 600;
     color: #204060;
-    margin:0;
-    border :1px solid #d0c6cd;
+    margin: 0;
+    border: 1px solid #d0c6cd;
     border-bottom: 3px solid #b7b5b7;
 }
 
@@ -57,8 +57,6 @@ body {
     background-image: radial-gradient( circle farthest-corner at 50.3% 44.5%,  #dee6ed 50%,  #f7e6ff 100.2% );
     padding-left: 0px;
     text-align: left;
-    font-size: 26px;
-    font-weight: 500;
     border: 2px solid #ffa64d;
 }
 
@@ -66,7 +64,6 @@ form {
   display: block;
   margin: 20px;
   border: None;
-  height: 40px;
   font-size: 22px;
   font-weight: 100;
 }
@@ -74,7 +71,9 @@ form {
 .inputbox {
     width: 90%;
     padding-left: 20px;
+    margin-left: 40px;
     height: 40px;
+    text-align: left;
     vertical-align: middle;
     border: 3px solid #004466;
     font: inherit;
@@ -82,16 +81,66 @@ form {
     font-weight: inherit;
     color: inherit;
 }
+.radiob {
+    display: inline;
+    margin-left: 40px;
+    text-align: left;
+}
+#block_radio{
+    display: inline-block;
+    vertical-align: middle;
+    border: None;
+    margin: 0px;
+}
+
+#button_go {
+  display: inline-block;
+  width: 60px;
+  vertical-align: middle;
+  margin: 0px;
+  float:right;
+}
+#divimg {
+  vertical-align: middle;
+  display: inline-block;
+  padding: 0px;
+  margin: 0px;
+
+  margin-left: 20%;
+}
+#CLICK {
+  display: inline-block;
+  vertical-align: middle;
+  line-height: 60px;
+  margin-right:15px;
+}
+
+.question_for_user {
+  font-size: 26px;
+  font-weight: 500;
+  border: None;
+  margin-top:40px;
+}
+
+#qu1 {margin-top:10px;
+}
+#qu2 {margin-top:40px;
+}
+#qu3 {margin-top:20px;
+}
 
 .res {
+  margin-left: 10px;
   color: #cc0052;
   font-weight: 400;
+}
+#res1{
+  word-spacing: 1.25em;
 }
 
 div {
     display: block;
-    margin-top: 20px;  margin-bottom: 20px;
-    margin-left: 20px; margin-right: 20px;
+    margin:10px;
     font: inherit;
     font-size: inherit;
     font-weight: inherit;
@@ -101,6 +150,11 @@ div {
 
 #output {
     display: block;
-    padding-left: 20px;
+    padding-left: 40px;
     font-size: 22px;
 }
+
+
+p {
+  margin-bottom: 5px;
+  margin-top: 0px;}

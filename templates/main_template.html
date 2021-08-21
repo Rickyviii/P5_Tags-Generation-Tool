@@ -3,39 +3,91 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
     <title>Tag generation tool _ Open Classroom _ Machine Learning Course _ Project 5</title>
-    <link rel="stylesheet" href="static/css/main.css?v=shope" type="text/css">
+    <link rel="stylesheet" href="static/css/main.css?qv9s=x" type="text/css">
 </head>
+<style>
+
+</style>
 
 <script>
-  function clear_box(elementID, DEFAULT_MSG) {
-    document.getElementById(elementID).innerHTML=DEFAULT_MSG;
+  function clear_box(elementID, DEFAULT_MSG) {document.getElementById(elementID).innerHTML=DEFAULT_MSG;}
+  function clear_input(elementID, DEFAULT_MSG) {document.getElementById(elementID).value=DEFAULT_MSG;}
+  function ApplyStyle(elementID) {
+   var el = document.getElementById(elementID);
+   el.style.paddingLeft="60px";
+   el.style.fontWeight="500";
+   el.style.color="#99004d";
+   el.style.fontStyle="italic";
   }
-  function clear_input(elementID, DEFAULT_MSG) {
-    document.getElementById(elementID).value=DEFAULT_MSG;
+  function submit_form() {
+    ApplyStyle('output');
+    clear_box('output', 'Loading results, please wait');
+    document.getElementById('Form1').submit();
+   }
+  function update_radio_value() {
+    if ('{{input_model}}'=='NMF') {
+      x = 'semi-supervised NMF model';
+      document.getElementById('nmf').checked=1;
+    }
+    else if ('{{input_model}}'=='STOVF') {
+      x = 'Supervised model based on Stack Overflow user tags';
+      document.getElementById('stovf').checked=1;
+    }
+    else x = 'nomodel';
+    document.getElementById('modele_choisi').innerHTML = x;
   }
+
 </script>
 
-<body>
+<body onload = "update_radio_value()">
   <div id="div0" >
     Welcome to the tag generation tool</div>
   <div id="main_div" >
     <br><br><br><br>
     <div id='input_qu'>
-        <div>Please type in your question here (limited to {{len_qu}} characters):</div>
-        <form action="/" method = "POST" onsubmit="clear_box('output','*** Loading results, please wait ***')">
-          <input id="QU_id" type = "text" name = "QU"  class="inputbox" maxlength="{{len_qu}}" value="{{input_data}}"
-                       onfocus="clear_input('QU_id','')"/>
-          <input type = "submit" value = "GO"/>
-        </form>
+        <form id="Form1" action="/" method = "POST" onsubmit="">
+          <div class="question_for_user" id = "qu1">Please type in your question here (limited to {{len_qu}} characters):</div>
+          <div>
+            <input id="QU_id" type = "text" name = "QU"  class="inputbox" maxlength="{{len_qu}}" value="{{input_data}}"
+                         onfocus="clear_input('QU_id','')"/>
+          </div>
+          <div class="question_for_user" id = "qu2">Please select the algorithm/model required:</div>
+          <div id='block_radio'>
+            <div>
+              <input type="radio" id="nmf" name="model_radio" value="NMF" class="radiob">
+              <label for="nmf">Semi-supervised model with tags from NMF algorithm</label>
+            </div>
+            <div>
+              <input type="radio" id="stovf" name="model_radio" value="STOVF" checked = True class="radiob">
+              <label for="stovf">Supervised model with with tags from stack overflow users</label>
+            </div>
+          </div>
+          <div id="divimg"> <span id="CLICK">Click here:</span>
+            <img id="button_go" src='static/images/button0.jpg' onclick="submit_form();" />
+          </div>
+          <!-- input type = "submit" value = "GO" id="button_go"/> -->
 
-        {% if output_data != "" %}
-        <div id='output'>
-          Here is the list of tags: <span class="res"> {{output_data[0]}} </span><br>
-          Time elapsed for computing: <span class="res"> {{output_data[1]}} </span>
-        </div>
-        {% else %}
-        <div id='output'></div>
-        {% endif %}
+          {% if output_data == "" %}
+            <div id='output'></div>
+          {% else %}
+            <div class="question_for_user" id = "qu3">Results:</div>
+            {% if output_data == "no_model" %}
+              <div id='output'>No model selected.</div>
+            {% elif output_data == 'error_at_Step_1' %}
+              <div id='output' class="ERROR">The question does not contain any word specific enough. Please rephrase your question.</div>
+            {% elif output_data == 'error_at_Step_2' %}
+              <div id='output' class="ERROR">Vocabulary unknown. Please enter a valid question.</div>
+            {% elif output_data == 'Unknown error' %}
+              <div id='output' class="ERROR">Unknown error. Please try again.</div>
+            {% else %}
+              <div id='output'>
+                <p> Model chosen: <span class="res" id="modele_choisi">xxxx</span></p>
+                <p>Time elapsed for computing: <span class="res">{{output_data[1]}} </span></p>
+                <p>List of tags: <span class="res" id="res1">{{output_data[0]}}</span></p>
+              </div>
+            {% endif %}
+          {% endif %}
+        </form>
     </div>
   </div>
 </body>

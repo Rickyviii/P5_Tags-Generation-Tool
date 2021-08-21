@@ -93,9 +93,15 @@ def my_tokenizer(s):
 def tokenize_question(input_string):
     #Vectorization
     CVect = CountVectorizer(preprocessor = my_preprocessor, tokenizer = my_tokenizer, stop_words = None, token_pattern = None)
-    CVect.fit_transform([input_string])
-    #output as a list of cleaned stemmed words
-    return CVect.get_feature_names()
+
+    #CVect.fit_transform([input_string])
+    try:
+        CVect.fit_transform([input_string])
+    except Exception as e:
+        return str(e)
+    else:
+        #output as a list of cleaned stemmed words
+        return CVect.get_feature_names()
 
 def create_dummy_1R_matrix(input_list_tags, trained_list_words): #create input for models
     mlb0 = MultiLabelBinarizer()
@@ -115,21 +121,29 @@ def get_column_name(list01, list_columns):
 def create_tags(input_user, model, words_list_for_training, tag_list):
     st = time.time()
     input_tokenized = tokenize_question(input_user)
+    if isinstance(input_tokenized, str):
+        return ("error_at_Step_1 (tokenization): " + input_tokenized) #error and exit
     print('step1 completed _ tokenized input:', input_tokenized)
 
     #Step2 _ here, we create an entry which actually a tf matrix for one question, based on vocabulary list (words list) used for training
     input_dummy = create_dummy_1R_matrix(input_tokenized, words_list_for_training)
-    print('step2 completed _ tokenized dummy input:\n', input_dummy[input_tokenized], '_ shape:', input_dummy.shape)
+    try:
+        print('step2 completed _ tokenized dummy input:\n', input_dummy[input_tokenized], '_ shape:', input_dummy.shape)
+    except Exception as e:
+        return ("error_at_Step_2: " + str(e))
 
-    #Step3 _ we use the model to make a prediction on the input computed at step 2
-    output_dummy_Tags = model.predict(input_dummy)[0].tolist()
-    print('step3 completed _ dummy tags output: size = 1 x', len(output_dummy_Tags))
+    try:
+        #Step3 _ we use the model to make a prediction on the input computed at step 2
+        output_dummy_Tags = model.predict(input_dummy)[0].tolist()
+        print('step3 completed _ dummy tags output: size = 1 x', len(output_dummy_Tags))
 
-    #Step4 _ we retrieve the tags from the model 1R vector output
-    output_tags = get_column_name(output_dummy_Tags, tag_list)
-    e = (time.time() - st)/60
+        #Step4 _ we retrieve the tags from the model 1R vector output
+        output_tags = get_column_name(output_dummy_Tags, tag_list)
+        e = (time.time() - st)/60
 
-    #Step4
-    print('step4 completed _ output tags:', output_tags)
-    print('time elapsed: {0:.2f} min.'.format(e))
-    return output_tags, e
+        #Step4
+        print('step4 completed _ output tags:', output_tags)
+        print('time elapsed: {0:.2f} min.'.format(e))
+        return output_tags, e
+    except Exception as e:
+        return ("This error occured:" + str(e))
