@@ -25,7 +25,11 @@
     document.getElementById('Form1').submit();
    }
   function update_radio_value() {
-    if ('{{input_model}}'=='NMF') {
+    if ('{{input_model}}'=='LDA') {
+      x = 'Unsupervised LDA model';
+      document.getElementById('lda').checked=1;
+    }
+    else if ('{{input_model}}'=='NMF') {
       x = 'semi-supervised NMF model';
       document.getElementById('nmf').checked=1;
     }
@@ -54,12 +58,16 @@
           <div class="question_for_user" id = "qu2">Please select the algorithm/model required:</div>
           <div id='block_radio'>
             <div>
+              <input type="radio" id="lda" name="model_radio" value="LDA" class="radiob">
+              <label for="lda">Unsupervised model with LDA dimension reduction algorithm</label>
+            </div>
+            <div>
               <input type="radio" id="nmf" name="model_radio" value="NMF" class="radiob">
               <label for="nmf">Semi-supervised model with tags from NMF algorithm</label>
             </div>
             <div>
               <input type="radio" id="stovf" name="model_radio" value="STOVF" checked = True class="radiob">
-              <label for="stovf">Supervised model with with tags from stack overflow users</label>
+              <label for="stovf">Supervised model with tags from stack overflow users</label>
             </div>
           </div>
           <div id="divimg"> <span id="CLICK">Click here:</span>
@@ -67,18 +75,12 @@
           </div>
           <!-- input type = "submit" value = "GO" id="button_go"/> -->
 
-          {% if output_data == "" %}
+          {% if output_data == "" %} <!-- Method == GET -->
             <div id='output'></div>
-          {% else %}
+          {% else %} <!-- Method == POST -->
             <div class="question_for_user" id = "qu3">Results:</div>
-            {% if output_data == "no_model" %}
-              <div id='output'>No model selected.</div>
-            {% elif output_data == 'error_at_Step_1' %}
-              <div id='output' class="ERROR">The question does not contain any word specific enough. Please rephrase your question.</div>
-            {% elif output_data == 'error_at_Step_2' %}
-              <div id='output' class="ERROR">Vocabulary unknown. Please enter a valid question.</div>
-            {% elif output_data == 'Unknown error' %}
-              <div id='output' class="ERROR">Unknown error. Please try again.</div>
+            {% if ERR == True %}
+              <div id='output' class="ERROR">{{output_data}}</div>
             {% else %}
               <div id='output'>
                 <p> Model chosen: <span class="res" id="modele_choisi">xxxx</span></p>
