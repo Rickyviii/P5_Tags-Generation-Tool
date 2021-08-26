@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, url_for, request
-import pickle
+import joblib
 import functions
 import pandas as pd
 
@@ -14,11 +14,11 @@ max_length_question = 150
 ThisDir = os.path.dirname(os.path.abspath(__file__))
 
 with open(os.path.join(ThisDir, r"files\models\lda_unsupervised_model.pkl"),   "rb") as f:
-    lda_tag_model   = pickle.load(f)
+    lda_tag_model   = joblib.load(f)
 with open(os.path.join(ThisDir, r"files\models\nmf_LSVC_semi_supervised_model.pkl"),   "rb") as f:
-    nmf_tag_model   = pickle.load(f)
+    nmf_tag_model   = joblib.load(f)
 with open(os.path.join(ThisDir, r"files\models\stovf_LSVC_supervised_model.pkl") ,"rb") as f:
-    stovf_tag_model = pickle.load(f)
+    stovf_tag_model = joblib.load(f)
 
 #import of list of words used to train the models
 list_words      = pd.read_csv(r'files\CSV files\words.csv', keep_default_na=False).word.tolist()
@@ -72,7 +72,7 @@ def question():
 
         print('output', output_to_user)
         return render_template('main_template.html', len_qu = max_length_question,
-                                input_data = input_user, output_data = output_to_user, input_model = "", ERR = ERR)
+                                input_data = input_user, output_data = output_to_user, input_model = model, ERR = ERR)
 
     else: #REQUEST == GET
         return render_template('main_template.html', len_qu = max_length_question,
