@@ -5,8 +5,8 @@ import time
 import pandas as pd
 
 import nltk
-nltk.download('stopwords')
-nltk.download('wordnet')
+#nltk.download('stopwords')
+#nltk.download('wordnet')
 
 ############################ ----------- Functions for document processing
 # ----------- (preprocessing, tokenizing, lemming, stemming, postprocessing...) ----------- ############################

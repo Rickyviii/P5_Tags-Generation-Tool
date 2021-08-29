@@ -1,3 +1,4 @@
 # folders to be ignored
 env/
 __pycache__/
+nltk.txt
