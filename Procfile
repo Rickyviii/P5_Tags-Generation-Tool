@@ -1,2 +1,2 @@
-web: gunicorn STEP1:app
+web: gunicorn STEP2:app
 worker: python worker.py
