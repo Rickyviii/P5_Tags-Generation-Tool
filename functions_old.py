@@ -4,7 +4,6 @@ import re
 import time
 import pandas as pd
 import os, joblib
-import warnings
 
 import nltk
 #nltk.download('stopwords')
@@ -138,16 +137,9 @@ def tokenize_question(input_string):
 def create_dummy_1R_matrix(input_list_tags, trained_list_words): #create input for models
     mlb0 = MultiLabelBinarizer()
     mlb0.fit([trained_list_words])
-    ERR = False
-    with warnings.catch_warnings():
-    # this will suppress all warnings in this block
-        warnings.simplefilter("ignore")
-        df_input_for_model = pd.DataFrame(mlb0.transform([input_list_tags]))
-        if df_input_for_model.iloc[0,:].max() == 0:
-            print("ERROR: no vocabulary is matching the words in input")
-            ERR = True
+    df_input_for_model = pd.DataFrame(mlb0.transform([input_list_tags]))
     df_input_for_model.columns = trained_list_words
-    return df_input_for_model, ERR
+    return df_input_for_model
 
 #function which returns the column name each time value is 1 in row (input list)
 def get_column_name(list01, list_columns):
@@ -158,83 +150,64 @@ def get_column_name(list01, list_columns):
 
 #function which select best x topics for new user input, and then retrieve best words (tags) associated to the selected topics
 def retrieve_tags_from_user_input(model, input_question_tokenized, trained_list_words, nb_topics = 1, nb_words = 3):
-    print('STARTING STEP3B "retrieve_tags_from_user_input"')
+    print('starting "retrieve_tags_from_user_input"')
     Matrix_1row_question_topics = model.transform(input_question_tokenized) # 1 row doc-topics matrix
-    df_userquestion_topics      = pd.DataFrame(Matrix_1row_question_topics) #doc_topics matrix
+    df_userquestion_topics = pd.DataFrame(Matrix_1row_question_topics) #doc_topics matrix
+
     df_topic_words = pd.DataFrame(model.components_) #topic_words matrix
-    print('topic words shape: ', df_topic_words.shape)
-    print('doc topics shape: ', df_userquestion_topics.shape)
+    print('topic words shape', df_topic_words.shape)
+    print('doc topics shape', df_userquestion_topics.shape)
     #indices of best topics to consider for the document (question) index
     best_topics_ix = df_userquestion_topics.loc[0,:].argsort()[:-1-nb_topics:-1].values.tolist() #nb_topics top topics
 
     Tags_=[]
     for best_topic in best_topics_ix:
         print('****** LOOP ****** ')
+
         Tag_indices = df_topic_words.loc[best_topic,:].argsort()[:-1-nb_words:-1].values.tolist() #nb_words top words
+
         print ('best_topic:', best_topic, '_ tag_indices: ', Tag_indices,'__ type: ', type(Tag_indices) )
         Tags_ = Tags_ + [trained_list_words[tag] for tag in Tag_indices]
-
+    print('exiting "retrieve_tags_from_user_input"')
     return Tags_ #returns a list of best tags
 
 ############################ ----------- Create_tags final Function ----------- ############################
 
 def create_tags(input_user, model, words_list_for_training, tag_list, unsupervised = False):
-    #///////////////// Step 1 _ preprocessing, tokenizing, post processing
+    #Step1 _ preprocessing, tokenizing, post processing
     st = time.time()
     input_tokenized = tokenize_question(input_user)
     if isinstance(input_tokenized, str):
-        print('ERROR AT STEP 1: ' + input_tokenized)
+        print('Error at step 1: ' + input_tokenized)
         return "ERR1", input_tokenized, True
     else:
-        print('STEP 1 COMPLETED _ tokenized input:', input_tokenized)
+        print('step1 completed _ tokenized input:', input_tokenized)
 
-    #///////////////// Step 2 _ here, we create an entry which is actually a tf matrix for one question,
+    #Step2 _ here, we create an entry which is actually a tf matrix for one question,
             # based on vocabulary list (words list) used for training
+    input_dummy = create_dummy_1R_matrix(input_tokenized, words_list_for_training)
     try:
-        input_dummy, ERR2 = create_dummy_1R_matrix(input_tokenized, words_list_for_training)
-        if not ERR2:
-            #we filter on words actually in Vocabulary
-            print('INPUT TOKENIZED:', input_tokenized)
-            for w in reversed(input_tokenized):
-                if not w in input_dummy.columns: input_tokenized.remove(w)
-            print('SHAPE of DUMMY MATRIX:', input_dummy.shape)
-            print('INPUT TOKENIZED:', input_tokenized)
-            print('STEP 2 COMPLETED _ tokenized dummy input:\n', input_dummy[input_tokenized], '_ shape:', input_dummy.shape)
-        else:
-            print('!')
-            errm = 'ERROR AT STEP 2 _ No input word matching any word in vocabulary'
-            print(errm)
-            return "ERR2", errm, True
+        print('step2 completed _ tokenized dummy input:\n', input_dummy[input_tokenized], '_ shape:', input_dummy.shape)
     except Exception as err:
-        print('ERROR AT STEP 2:' + str(err))
         return "ERR2", str(err), True #True means error
 
-    if unsupervised == False: #semi supervised or fully supervised model -> we use a classifier prediction
-        #///////////////// Step 3a _ we use the model to make a prediction on the input computed at step 2
-        try:
+    try:
+        if unsupervised == False: #semi supervised or fully supervised model -> we use a classifier prediction
+            #Step3a _ we use the model to make a prediction on the input computed at step 2
             output_dummy_Tags = model.predict(input_dummy)[0].tolist()
-            print('STEP 3A COMPLETED _ dummy tags output: size = 1 x', len(output_dummy_Tags))
-            #return output_dummy_Tags,"{0:.2f} s".format((time.time() - st)/60), False
-        except Exception as err:
-            print('ERROR AT STEP 3A: ' + str(err))
-            return "ERR 3A", str(err), True #True means error
+            print('step3 completed _ dummy tags output: size = 1 x', len(output_dummy_Tags))
 
-        #///////////////// Step 4a _ We retrieve the tags from the model 1R vector output
-        try:
+            #Step4 _ we retrieve the tags from the model 1R vector output
             output_tags = get_column_name(output_dummy_Tags, tag_list)
-            print('STEP 4A COMPLETED _ output tags:', output_tags)
-        except Exception as err:
-            print('ERROR AT STEP 4A: ' + str(err))
-            return "ERR 4A", str(err), True #True means error
-    else:
-        try:
-            #///////////////// Step 3b _ we use directly the dimension reduction algorithm to extract main words (tags)
+            print('step4 completed _ output tags:', output_tags)
+        else:
+            #Step3b _ we use directly the dimension reduction algorithm to extract main words (tags)
             output_tags = retrieve_tags_from_user_input(model, input_dummy, words_list_for_training, nb_topics = 1, nb_words = 3)
-            print('STEP 3B COMPLETED _ output tags:', output_tags)
-        except Exception as err:
-            print('ERROR AT STEP 3B: ' + str(err))
-            return "ERR 3B", str(err), True #True means error
+            print('step3b completed _ output tags:', output_tags)
 
-    te = (time.time() - st)/60
-    print('TIME ELAPSED: {0:.2f} min.'.format(te))
-    return output_tags, te, False #False means no error
+        te = (time.time() - st)/60
+        print('time elapsed: {0:.2f} min.'.format(te))
+        return output_tags, te, False #False means no error
+
+    except Exception as err:
+        return "UNKNOWN_ERROR", str(err), True #True means there is an error

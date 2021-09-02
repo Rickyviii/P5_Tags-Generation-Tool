@@ -1,1 +1,2 @@
-web: gunicorn --timeout 0 init:app
+web: gunicorn STEP1:app
+worker: python worker.py

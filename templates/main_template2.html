@@ -1,0 +1,240 @@
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=yes">
+    <title>Tag generation tool _ Open Classroom _ Machine Learning Course _ Project 5</title>
+    <link rel="stylesheet" href="static/css/main.css?qv9s=x" type="text/css">
+
+    <!-- JSGlue is for Ajax queries to Flask -->
+    {{ JSGlue.include() }}
+</head>
+
+
+<body >
+  <div id="div0" >
+    Welcome to the tag generation tool</div>
+  <div id="main_div" >
+    <br><br><br><br>
+    <div id='input_qu'>
+        <form id="Form1" action="/" method = "POST" onsubmit="">
+          <div class="question_for_user" id = "qu1">Please type in your question here (limited to {{len_qu}} characters):</div>
+          <div>
+            <input id="QU_id" type = "text" name = "QU"  class="inputbox" maxlength="{{len_qu}}" value="{{input_data}}"
+                         onfocus=""/>
+          </div>
+          <div class="question_for_user" id = "qu2">Please select the algorithm/model required:</div>
+          <div id='block_radio'>
+            <div>
+              <input type="radio" id="lda" name="model_radio" value="LDA" class="radiob">
+              <label for="lda">Unsupervised model with LDA dimension reduction algorithm</label>
+            </div>
+            <div>
+              <input type="radio" id="nmf" name="model_radio" value="NMF" class="radiob">
+              <label for="nmf">Semi-supervised model with tags from NMF algorithm</label>
+            </div>
+            <div>
+              <input type="radio" id="stovf" name="model_radio" value="STOVF" checked = True class="radiob">
+              <label for="stovf">Supervised model with tags from stack overflow users</label>
+            </div>
+          </div>
+          <div id="divimg"> </div>
+
+          <!-- OUTPUT RESULTS -->
+          <div id = 'qu3'></div>
+          <div id = 'output_error'></div>
+          <div id = 'output'></div>
+
+
+          <!-- FIN OUTPUT RESULTS -->
+        </form>
+    </div>
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <!-- <script type="text/javascript" src="static/js/jquery-3.6.0.min.js"></script> -->
+  <!-- <script type="text/javascript" src="{{ url_for('static',filename="js/input2.js")}}"></script> -->
+  <script type = "text/javascript">
+
+  $newp1 = $("<p>Model chosen: <span class='res' id='modele_choisi'></span></p>");
+  $newp2 = $("<p>Time elapsed for computing: <span class='res' id ='te'></span></p>");
+  $newp3 = $("<p>List of tags: <span class='res' id='res1'></span></p>");
+  $imgdiv = $("<span id='CLICK'>Click here:</span><img id='button_go' src='static/images/button0.jpg' />");
+
+
+  function erase_text(elem) {
+    console.log('elem: ' +$(elem).attr("id") + '_' + $(elem).text());
+    if ($(elem).text()!='') {
+      $(elem).text('');
+      console.log('erased '+ elem);
+    }
+  }
+
+  function append_text_after_empty(elem, text, i) {
+    if ($(elem).text()!=text && i<20) {
+         $(elem).text(text);
+         console.log('try ' + i);
+         i=i+1;
+         setTimeout(append_text_after_empty(elem, text, i), 100);
+    }
+    if (i==20) console.log ('échec');
+  }
+
+  function toggle_click(elem, active) {
+    if (active==1) $(elem).css("pointer-events","auto");
+    else $(elem).css("pointer-events","none");
+  }
+
+  function toggle_button(active){
+      if (active==1) {
+           $("#divimg").append($imgdiv);
+           //toggle_click(elem, active);
+      }
+      else $("#divimg").empty();
+  }
+
+  $(document).ready(function() {
+      //onclick actions _ for submitted
+      toggle_button(1);
+
+      $(document).on('click','#button_go',function(){
+          //input
+          console.log('button clicked');
+          toggle_button(0); // disable click
+          var question = $("#QU_id").val();
+          var model = $("form input[type='radio']:checked").val();
+          console.log (question, model);
+          //indicating loading
+          erase_text('#output');
+          erase_text('#qu3');
+          erase_text('#output_error');
+          append_text_after_empty('#output', "loading results for model '" + model + "' and question: '" + question + "'", 0)
+          ApplyStyle("output");
+          //launch background tasks
+          send_job(question, model, display_output);
+          //check if output has been received
+          //update with ajax if done
+      });
+
+      //onclick actions _ entering question
+      var clickinput = 0 ;
+      $(document).on('click','#QU_id',function(){
+          console.log('input clicked');
+          if (clickinput == 0) {
+              $(this).val("");
+              clickinput = 1;
+          }
+      });
+  });
+
+///////////////////////// functions //////////////////////////////
+
+  function ApplyStyle(elementID) {
+      var el = document.getElementById(elementID);
+      el.style.paddingLeft="60px";
+      el.style.fontWeight="500";
+      el.style.color="#99004d";
+      el.style.fontStyle="italic";
+  }
+
+  function send_job(question, model){
+    // Ajax POST request to upload_file() in the API
+      var formData = new FormData();
+      formData.append('input_user', question);
+      formData.append('model', model);
+      $.ajax({
+          type: 'POST',
+          url: Flask.url_for('create_job'),
+          data: formData,
+          cache: false,
+          processData: false,
+          contentType: false
+      })
+          // If done, get the status of the background job that was started and launch function to do when finished
+          .done((response) => {
+                console.log("AJAX response retrieved:");
+                console.log(response.status);
+                console.log(response.data.job_ID, ' ', response.data.model);
+                MODEL = response.data.model;
+                get_status(response.data.job_ID, MODEL, 0);
+          })
+
+          .fail((error) => {
+              console.log("ajax fail on send_job: " + error);
+              toggle_button(1);
+          });
+  }
+
+  function get_status(jobID, MODEL,i){
+      $.ajax({
+            type: 'GET',
+            url: '/job',
+            data: 'jid=' + jobID + '&i=' +i
+      })
+            .done((response) => {
+                const jobStatus = response.data.jobStatus;
+                console.log('i = ' + i);
+                if (jobStatus == 'failed') {
+                    console.log(response);
+                    toggle_button(1);
+                    return false;
+                }
+                else if (jobStatus == 'finished') {
+                    // Parse the returned JSON and displays output
+                    console.log('JOB FINI');
+                    listtags = response.data.list_tags;
+                    te = response.data.te;
+                    err = response.data.err0;
+                    display_output(MODEL, listtags, te, err);
+                    toggle_button(1);
+                    return true;
+                }
+                // If the task hasn't been finished, try again in 1 second.
+                else{
+                    setTimeout(function() {
+                        i=i+1;
+                        console.log('next round for i: ' + i);
+                        get_status(response.data.jobID, MODEL, i);
+                    }, 1000);
+                }
+
+            })
+            .fail((error) => {
+                console.log("ajax fail on get_status: " + error);
+                toggle_button(1);
+            });
+  }
+
+
+  display_output = function (model, listtags, te, err) {
+    //clean any previous content
+    $('#output').empty();
+    $('#qu3').empty();
+    $('#output_error').empty();
+
+    //update content
+    $('#qu3').append('Results');
+
+    if (err==true) {
+      console.log(err + '__ error');
+      $('#output_error').append("ERROR");
+    }
+    else {
+      console.log(err + '__ success');
+      $('#output').append($newp1);
+      $('#output').append($newp2);
+      $('#output').append($newp3);
+      $('#modele_choisi').empty();
+      $('#modele_choisi').append(model);
+      $('#te').empty(te);
+      $('#te').append(te);
+      $('#res1').empty(listtags);
+      $('#res1').append(listtags);
+    }
+  }
+
+  </script>
+</body>
+
+
+
+
+</html>
