@@ -3,10 +3,13 @@ from flask import Flask, render_template, url_for, request, jsonify
 from flask_jsglue import JSGlue
 
 #from flask_executor import Executor
-import joblib
-import functions
+#import joblib
+import functions, mymodule
+
 import pandas as pd
 import time
+#import nltk
+
 from time import sleep
 from rq import Queue
 from rq.job import Job
@@ -16,6 +19,9 @@ from rq.registry import FinishedJobRegistry
 
 app = Flask(__name__) #Flask application instance
 jsGlue=JSGlue(app)
+
+
+
 
 from worker import conn
 q = Queue(connection=conn)
@@ -28,7 +34,8 @@ print()
 max_length_question = 150
 #import of tag models & csv files
 ModelDir, CSVDir = r"files/models", r"files/CSV files"
-lda_tag_model, nmf_tag_model, stovf_tag_model, list_words, list_tags_nmf, list_tags_stovf = functions.import_files(ModelDir, CSVDir)
+
+lda_tag_model, nmf_tag_model, stovf_tag_model, list_words, list_tags_nmf, list_tags_stovf, CVect, transformer, list_vocab = functions.import_files(ModelDir, CSVDir)
 
 #main HTML page generation
 @app.route('/', methods=['GET', 'POST']) #app.route transform the output of the function into an HTTP response when the URL is / (root of the web site)
@@ -43,9 +50,12 @@ def create_job():
     #question from the input_user (string)  + model selected by user
     input_user, tag_model_string = list(form_data.values())[0], list(form_data.values())[1]
     print(input_user, tag_model_string)
-    tag_model, list_tags, unsup, errm = functions.user_select(form_data, lda_tag_model, nmf_tag_model, stovf_tag_model,
+    tag_model, list_tags, unsup, errm, tfidf = functions.user_select(form_data, lda_tag_model, nmf_tag_model, stovf_tag_model,
                                                                 list_tags_nmf, list_tags_stovf )
-    job = q.enqueue(launch_task, input_user, tag_model, list_words, list_tags, unsup)
+    job = q.enqueue(launch_task, input_user, tag_model, CVect, transformer, list_words, list_tags,
+                                    list_vocab, unsup, tfidf, job_timeout='7m') #timeout fixed at 7 minutes.
+
+
     jobID = job.get_id()
     responseObject = {"status": "success",
                       "data": { "model": tag_model_string,
@@ -87,18 +97,19 @@ def checkstatus():
         responseObject = {"data": {"jobStatus": "no job found!"}}
     return responseObject
 
-def launch_task(input_user, tag_model, list_words, list_tags, unsup):
+def launch_task(input_user, tag_model, CVect, transformer, list_words, list_tags, list_vocab, unsup, tfidf):
     # Start the tag creation as a background task in the Redis queue
     st=time.time()
     print('/////////////////////////////////////////////////','starting job at {0:.2f}'.format(st),'/////////////////////////////////////////////////////')
-    list_tags_output_ = functions.create_tags(input_user, tag_model, list_words, list_tags, unsup)
+    list_tags_output_ = functions.create_tags(input_user, tag_model, CVect, transformer, list_words, list_tags, list_vocab, unsup, tfidf)
+
     print('FUNCTION create_tags _ FINISHED')
 
     if list_tags_output_[2] == True:  #ERROR
         ERR = list_tags_output_[0]
         ERR_MSG = list_tags_output_[1]
         if ERR=="ERR1":
-            err_msg ="The question does not contain any word specific enough. Please rephrase your question."
+            err_msg ="The question does not contain any word specific enough, or the vocabulary is unknown.\nPlease rephrase your question."
         elif ERR=="ERR2":
             err_msg ="Vocabulary unknown. Please enter a valid question."
         elif ERR=="ERR 3A":

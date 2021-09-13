@@ -1,5 +1,5 @@
 $newp1 = $("<p>Model chosen: <span class='res' id='modele_choisi'></span></p>");
-$newp2 = $("<p>Elapsed time: <span class='res' id ='te'></span></p>");
+$newp2 = $("<p>Elapsed time for the 'Tag generation' task: <span class='res' id ='te'></span></p>");
 $newp3 = $("<p>List of tags: <span class='res' id='res1'></span></p>");
 $imgdiv = $("<span id='CLICK'>Click here:</span><img id='button_go' src='static/images/button0.jpg' />");
 
@@ -105,7 +105,7 @@ function get_status(jobID, MODEL,i){
               else if (jobStatus == 'stopped' || jobStatus == 'canceled' || jobStatus == 'failed' || jobStatus == 'no job found!') {
                   console.log(response);
                   toggle_button(1);
-                  if (jobStatus == 'no job found!') {errmsg = 'No job found. Request terminated'}
+                  if (jobStatus == 'no job found!') {errmsg = 'No job found. Request terminated.'}
                   else {errmsg = "The job is in status '" + jobStatus + "'."}
                   display_output(MODEL, listtags, te, true, errmsg);
                   return false;
