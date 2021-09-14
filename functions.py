@@ -1,6 +1,3 @@
-#from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-#from sklearn.preprocessing import MultiLabelBinarizer
-
 import time
 import pandas as pd
 import os, joblib
@@ -23,7 +20,7 @@ def import_files(ModelDir, CSVDir):
     list_words      = pd.read_csv(os.path.join(CSVDir, r'words.csv'),           keep_default_na=False).word.tolist()
     list_vocab      = pd.read_csv(os.path.join(CSVDir, r'vocab.csv'),           keep_default_na=False).Vocabulary.tolist()
     #import of list of tags corresponding to each tag models
-    list_tags_nmf   = pd.read_csv(os.path.join(CSVDir, r'NMF0_Tag_list_2.csv'), keep_default_na=False).Tags.tolist()
+    list_tags_nmf   = pd.read_csv(os.path.join(CSVDir, r'NMF_Tag_list.csv'), keep_default_na=False).Tags.tolist()
     list_tags_stovf = pd.read_csv(os.path.join(CSVDir, r'St_OVF_Tag_list.csv'), keep_default_na=False).Tags.tolist()
     return lda_tag_model, nmf_tag_model, stovf_tag_model, list_words, list_tags_nmf, list_tags_stovf, CVect, transformer, list_vocab
 
@@ -34,36 +31,37 @@ def user_select(form_data, lda_tag_model, nmf_tag_model, stovf_tag_model, list_t
     tfidf = False
     if model in ['LDA', 'NMF', 'STOVF']:
         if model == "LDA":
+            print('LDA')
             tag_model, list_tags, unsup = lda_tag_model, '', True
         elif model == "NMF":
+            print('NMF')
             tag_model, list_tags, unsup, tfidf = nmf_tag_model, list_tags_nmf, False, True
         elif model == "STOVF":
+            print('STOVF')
             tag_model, list_tags, unsup = stovf_tag_model, list_tags_stovf, False
     else:
-        tag_model, list_tags, unsup, err = None, [], False, True, False
+        tag_model, list_tags, unsup, err = None, [], False, True
     return tag_model, list_tags, unsup, err, tfidf
 
 ############################ ----------- Functions for document processing
-# ----------- (preprocessing, tokenizing, lemming, stemming, postprocessing...) ----------- ############################
-
-############################ ----------- CountVectorizer Functions ----------- ############################
-
-#preprocessing of the document includes just lowerization
 
 #function which uses CVect or transformer to transform a string into a tf or tfidf Matrix
-#CVect, imported by joblib, uses my_preprocessor and my_tokenizer functions
+#CVect, imported by joblib, uses my_preprocessor and my_tokenizer functions from mymodule.py module
 def tokenize_question(input_string, CountVect_, Transformer_, tfidf = False):
+    print ('TOKENIZE QUESTION: START')
     try:
         tf = CountVect_.transform([input_string])
         if tfidf!=True:
+            print('WE HAVE TF')
             return tf
         else:
             tfidf = Transformer_.transform(tf)
+            print('we have tfidf')
             return tfidf
 
     except Exception as err:
+        print('ERR at step 1:' + err)
         return str(err)
-
 
 #function which returns the column name each time value is 1 in row (input list)
 def get_column_name(list01, list_columns):
@@ -89,7 +87,6 @@ def find_word_in_vocab(list_of_stemmed_words, list_vocab):
     return Y
 
 ############################ ----------- unsupervised approach only ----------- ############################
-
 #function which select best x topics for new user input, and then retrieve best words (tags) associated to the selected topics
 def retrieve_tags_from_user_input(model, input_question_tokenized, trained_list_words, nb_topics, nb_words):
     print('STARTING STEP3B "retrieve_tags_from_user_input"')
@@ -117,6 +114,7 @@ def create_tags(input_user, model,  CVect_, transformer_, words_list_for_trainin
     #///////////////// Step 1 _ preprocessing, tokenizing, post processing
     st = time.time()
     tf_tfidf = tokenize_question(input_user, CVect_, transformer_, tfidf) #transform in tf or tfidf vector
+    print('FIN TOKENIZE QUESTION')
     if isinstance(tf_tfidf, str):
         print('ERROR AT STEP 1: ' + tf_tfidf)
         return "ERR1", tf_tfidf, True
@@ -151,6 +149,7 @@ def create_tags(input_user, model,  CVect_, transformer_, words_list_for_trainin
     else: # Unsupervised case
         try:
             #///////////////// Step 2B _ we use directly the dimension reduction algorithm to extract main words (tags)
+            print('STEP 2B started ******************************************************************************************')
             output_tags = retrieve_tags_from_user_input(model, tf_tfidf, words_list_for_training, nb_topics = 1, nb_words = 3)
             #reverse stemming
             output_tags = find_word_in_vocab(output_tags, Vocab)

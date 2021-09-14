@@ -2,13 +2,10 @@ import os
 from flask import Flask, render_template, url_for, request, jsonify
 from flask_jsglue import JSGlue
 
-#from flask_executor import Executor
-#import joblib
 import functions, mymodule
 
 import pandas as pd
 import time
-#import nltk
 
 from time import sleep
 from rq import Queue
@@ -19,9 +16,6 @@ from rq.registry import FinishedJobRegistry
 
 app = Flask(__name__) #Flask application instance
 jsGlue=JSGlue(app)
-
-
-
 
 from worker import conn
 q = Queue(connection=conn)
@@ -54,7 +48,6 @@ def create_job():
                                                                 list_tags_nmf, list_tags_stovf )
     job = q.enqueue(launch_task, input_user, tag_model, CVect, transformer, list_words, list_tags,
                                     list_vocab, unsup, tfidf, job_timeout='7m') #timeout fixed at 7 minutes.
-
 
     jobID = job.get_id()
     responseObject = {"status": "success",
@@ -128,8 +121,12 @@ def launch_task(input_user, tag_model, CVect, transformer, list_words, list_tags
         print(err_msg)
     else: #NO ERROR
         output_to_user1 = "    " + "    ".join(['<'+c+'>' for c in list_tags_output_[0]]) #list of tags
-        #output_to_user1 = "    " + "    ".join(['#'+c for c in list_tags_output_[0]]) #list of tags
+
         output_to_user2 = "{0:.2f} min.".format(list_tags_output_[1])                     #time elapsed
+        if list_tags_output_[1]<1:
+            output_to_user2 = "{0:.1f}s".format(60*list_tags_output_[1])
+
+
         output_to_user  = [output_to_user1, output_to_user2, False]
         print()
         print('TAGS CREATION _ SUCCESS. FINAL OUTPUT = {0}'.format(output_to_user))

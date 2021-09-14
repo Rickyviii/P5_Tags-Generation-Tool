@@ -1,3 +1,5 @@
 # folders to be ignored
 env/
 __pycache__/
+files/CSV files/OLD
+files/models/OLD

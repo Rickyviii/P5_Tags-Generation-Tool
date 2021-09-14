@@ -107,7 +107,7 @@ function get_status(jobID, MODEL,i){
                   toggle_button(1);
                   if (jobStatus == 'no job found!') {errmsg = 'No job found. Request terminated.'}
                   else {errmsg = "The job is in status '" + jobStatus + "'."}
-                  display_output(MODEL, listtags, te, true, errmsg);
+                  display_output(MODEL, '', te, true, errmsg);
                   return false;
               }
 
