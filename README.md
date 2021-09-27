@@ -17,4 +17,4 @@ It uses Redis and RQ servers (compatible with heroku).
 URL : 
       https://oc-p5-tags.herokuapp.com/
 
-The PDF file is the powerpoint presentation used for the final project's oral defense.
+The ppsx file is the powerpoint presentation used for the final project's oral defense. The pdf file is the requested report ont his project.
